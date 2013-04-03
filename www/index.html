@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>DC Council Special Election</title>
+		<script src="Chart.min.js"></script>
+	</head>
+	<body>
+
+		<h3>Outside of DMV</h3>
+		<canvas id="outside-spending" width="200" height="200"></canvas>
+		<canvas id="outside-spending-state" width="300" height="200"></canvas>
+
+		<script>
+
+			function drawOutsideSpendingChart() {
+
+				var ctx;
+
+				ctx = document.getElementById("outside-spending").getContext("2d");
+				new Chart(ctx).Doughnut([
+					{value: 20, color: "#888888"},
+					{value: 50, color: "#888888"}
+				]);
+
+				var fillColor = "#888888";
+				var strokeColor = "#FFFFFF";
+
+				ctx = document.getElementById("outside-spending-state").getContext("2d");
+				new Chart(ctx).Bar({
+					labels: ["AZ", "FL", "MD"],
+					datasets: [
+						{fillColor: fillColor, strokeColor: strokeColor, data: [400, 20, 10]},
+					]
+				}, {
+					scaleFontFamily: "Helvetica",
+					scaleLabel: "$<%=value%>",
+					scaleOverride: true,
+					scaleSteps: 4,
+					scaleStepWidth: 100,
+					scaleStartValue: 0
+				});
+
+
+			}
+
+			drawOutsideSpendingChart();
+
+		</script>
+	</body>
+</html>
