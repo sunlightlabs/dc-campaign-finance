@@ -1,2 +1,9 @@
 git+git://github.com/sunlightlabs/saucebrush.git
 python-omgeo==1.5.5
+cssselect==0.8
+lxml==3.1.0
+name-cleaver==0.5.0
+pyquery==1.2.4
+requests==1.1.0
+suds==0.4
+unicodecsv==0.9.4
