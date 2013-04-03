@@ -1,0 +1,2 @@
+git+git://github.com/sunlightlabs/saucebrush.git
+python-omgeo==1.5.5
