@@ -290,17 +290,17 @@ if __name__ == '__main__':
 
     # limit to special election contributions and split into candidate files
 
-    # with open(geocoded_path) as infile:
-    #     with open(atlarge_path, 'w') as atlarge_file:
-    #         run_recipe(
-    #             sources.CSVSource(infile),
-    #             SpecialElectionCandidateFilter(CANDIDATES),
-    #             DateFilter(datetime.date(2012, 11, 28)),
-    #             CandidateEmitter(CANDIDATES),
-    #             emitters.CountEmitter(every=100),
-    #             emitters.CSVEmitter(atlarge_file, FIELDNAMES),
-    #             error_stream=emitters.DebugEmitter()
-    #         )
+    with open(geocoded_path) as infile:
+        with open(atlarge_path, 'w') as atlarge_file:
+            run_recipe(
+                sources.CSVSource(infile),
+                SpecialElectionCandidateFilter(CANDIDATES),
+                DateFilter(datetime.date(2012, 11, 28)),
+                CandidateEmitter(CANDIDATES),
+                emitters.CountEmitter(every=100),
+                emitters.CSVEmitter(atlarge_file, FIELDNAMES),
+                error_stream=emitters.DebugEmitter()
+            )
 
     # extract geocoded locations
 
