@@ -164,22 +164,35 @@ class GeocodingFilter(filters.Filter):
     def __init__(self, *args, **kwargs):
         super(GeocodingFilter, self).__init__(*args, **kwargs)
         self.geocoder = Geocoder()
+        self.cache = {}
+
+        with open(os.path.join(PWD, 'data', 'geocache.csv')) as infile:
+            for record in csv.reader(infile):
+                self.cache[record[0]] = (record[1], record[2])
 
     def process_record(self, record):
 
         if not record.get('lat') and not record.get('lon'):
 
             vals = (record['address'], record['city'], record['state'], record['zip'])
-            addr = "%s, %s %s %s" % vals
+            addr = "%s %s %s %s" % vals
 
-            result = self.geocoder.geocode(addr)
+            if addr in self.cache:
 
-            candidates = result.get('candidates', None)
-            if candidates:
-                c = candidates[0]
+                ll = self.cache[addr]
+                record['lat'] = ll[0]
+                record['lon'] = ll[1]
 
-                record['lat'] = c.y
-                record['lon'] = c.x
+            else:
+
+                result = self.geocoder.geocode(addr)
+
+                candidates = result.get('candidates', None)
+                if candidates:
+                    c = candidates[0]
+
+                    record['lat'] = c.y
+                    record['lon'] = c.x
 
         return record
 
@@ -256,35 +269,50 @@ if __name__ == '__main__':
 
     # geocode contributions
 
-    with open(raw_path) as infile:
-        with open(geocoded_path, 'w') as geocoded_file:
-            run_recipe(
-                sources.CSVSource(infile),
-                filters.FieldRenamer(field_mapping),
-                filters.FieldAdder('lat', ''),
-                filters.FieldAdder('lon', ''),
-                filters.FieldAdder('candidate', ''),
-                filters.FieldModifier('amount', currency_to_float),
-                StateFixerFilter(),
-                CandidateFilter(),
-                ContributorNameFilter(),
-                # FakeGeocodingFilter((39.635307, -77.865601), (38.169114, -75.937500)),
-                GeocodingFilter(),
-                emitters.CountEmitter(every=100),
-                emitters.CSVEmitter(geocoded_file, FIELDNAMES),
-                error_stream=emitters.DebugEmitter()
-            )
+    # with open(raw_path) as infile:
+    #     with open(geocoded_path, 'w') as geocoded_file:
+    #         run_recipe(
+    #             sources.CSVSource(infile),
+    #             filters.FieldRenamer(field_mapping),
+    #             filters.FieldAdder('lat', ''),
+    #             filters.FieldAdder('lon', ''),
+    #             filters.FieldAdder('candidate', ''),
+    #             filters.FieldModifier('amount', currency_to_float),
+    #             StateFixerFilter(),
+    #             CandidateFilter(),
+    #             ContributorNameFilter(),
+    #             # FakeGeocodingFilter((39.635307, -77.865601), (38.169114, -75.937500)),
+    #             GeocodingFilter(),
+    #             emitters.CountEmitter(every=100),
+    #             emitters.CSVEmitter(geocoded_file, FIELDNAMES),
+    #             error_stream=emitters.DebugEmitter()
+    #         )
 
     # limit to special election contributions and split into candidate files
 
+    # with open(geocoded_path) as infile:
+    #     with open(atlarge_path, 'w') as atlarge_file:
+    #         run_recipe(
+    #             sources.CSVSource(infile),
+    #             SpecialElectionCandidateFilter(CANDIDATES),
+    #             DateFilter(datetime.date(2012, 11, 28)),
+    #             CandidateEmitter(CANDIDATES),
+    #             emitters.CountEmitter(every=100),
+    #             emitters.CSVEmitter(atlarge_file, FIELDNAMES),
+    #             error_stream=emitters.DebugEmitter()
+    #         )
+
+    # extract geocoded locations
+
+    geocache_path = os.path.join(PWD, 'data', 'geocache.csv')
+
     with open(geocoded_path) as infile:
-        with open(atlarge_path, 'w') as atlarge_file:
+        with open(geocache_path, 'w') as outfile:
             run_recipe(
                 sources.CSVSource(infile),
-                SpecialElectionCandidateFilter(CANDIDATES),
-                DateFilter(datetime.date(2012, 11, 28)),
-                CandidateEmitter(CANDIDATES),
-                emitters.CountEmitter(every=100),
-                emitters.CSVEmitter(atlarge_file, FIELDNAMES),
+                filters.FieldMerger({'address': ('address', 'city', 'state', 'zip')},
+                                    lambda a, c, s, z: "%s %s %s %s" % (a, c, s, z)),
+                filters.FieldKeeper(('address', 'lat', 'lon',)),
+                emitters.CSVEmitter(outfile, ('address', 'lat', 'lon')),
                 error_stream=emitters.DebugEmitter()
             )
