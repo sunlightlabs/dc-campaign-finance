@@ -269,24 +269,24 @@ if __name__ == '__main__':
 
     # geocode contributions
 
-    # with open(raw_path) as infile:
-    #     with open(geocoded_path, 'w') as geocoded_file:
-    #         run_recipe(
-    #             sources.CSVSource(infile),
-    #             filters.FieldRenamer(field_mapping),
-    #             filters.FieldAdder('lat', ''),
-    #             filters.FieldAdder('lon', ''),
-    #             filters.FieldAdder('candidate', ''),
-    #             filters.FieldModifier('amount', currency_to_float),
-    #             StateFixerFilter(),
-    #             CandidateFilter(),
-    #             ContributorNameFilter(),
-    #             # FakeGeocodingFilter((39.635307, -77.865601), (38.169114, -75.937500)),
-    #             GeocodingFilter(),
-    #             emitters.CountEmitter(every=100),
-    #             emitters.CSVEmitter(geocoded_file, FIELDNAMES),
-    #             error_stream=emitters.DebugEmitter()
-    #         )
+    with open(raw_path) as infile:
+        with open(geocoded_path, 'w') as geocoded_file:
+            run_recipe(
+                sources.CSVSource(infile),
+                filters.FieldRenamer(field_mapping),
+                filters.FieldAdder('lat', ''),
+                filters.FieldAdder('lon', ''),
+                filters.FieldAdder('candidate', ''),
+                filters.FieldModifier('amount', currency_to_float),
+                StateFixerFilter(),
+                CandidateFilter(),
+                ContributorNameFilter(),
+                # FakeGeocodingFilter((39.635307, -77.865601), (38.169114, -75.937500)),
+                GeocodingFilter(),
+                emitters.CountEmitter(every=100),
+                emitters.CSVEmitter(geocoded_file, FIELDNAMES),
+                error_stream=emitters.DebugEmitter()
+            )
 
     # limit to special election contributions and split into candidate files
 
